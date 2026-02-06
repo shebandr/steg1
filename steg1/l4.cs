@@ -27,7 +27,7 @@ namespace GPILabs
             int heightInt = BitConverter.ToInt32(height, 0);
             int widthInt = BitConverter.ToInt32(width, 0);
             Debug.WriteLine($"{heightInt} * {widthInt} = {heightInt * widthInt} ||| {colorsCount} ||| {data.Count()} ||| {data.Count() - heightInt * widthInt}");
-            List<byte> data2 = data;
+            List<byte> data2 = new List<byte>( data);
 
             
             int originalStride = (((data.Count - 54) / heightInt) % widthInt);

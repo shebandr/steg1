@@ -6,7 +6,48 @@
         xmlns:local="clr-namespace:steg1"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Button Width="100" Height="30" Click="Button_Click">УЭЭЭЭЭ</Button>
-    </Grid>
+    <StackPanel>
+        <Label HorizontalAlignment="Center">Извлечение битовых плоскостей</Label>
+        <Button Width="150" Click="SelectFolder_Click" Margin="5">Выбрать папку</Button>
+        <Button Click="Button_Click" Width="150" Margin="5">Извлечь плоскости</Button>
+        <Label HorizontalAlignment="Center">Внедрение данных в заданную битовую плоскость.</Label>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="getTXT" Margin="5">Открыть .txt</Button>
+            <Button x:Name="getBMP" Margin="5">Открыть .bmp</Button>
+            <Button x:Name="CalcIntegration" Margin="5">Внедрить текст в картинку</Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Label>Укажите бит:</Label>
+            <ComboBox Width="40" x:Name="selectBit1"
+          SelectedIndex="0">
+                <ComboBoxItem>0</ComboBoxItem>
+                <ComboBoxItem>1</ComboBoxItem>
+                <ComboBoxItem>2</ComboBoxItem>
+                <ComboBoxItem>3</ComboBoxItem>
+                <ComboBoxItem>4</ComboBoxItem>
+                <ComboBoxItem>5</ComboBoxItem>
+                <ComboBoxItem>6</ComboBoxItem>
+                <ComboBoxItem>7</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
+        <Label HorizontalAlignment="Center">Извлечение данных из заданной битовой плоскости.</Label>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="getBMP2" Margin="5">Открыть .bmp</Button>
+            <Button x:Name="CalcExtraction" Margin="5">Извлечь текст из картинки</Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Label>Укажите бит:</Label>
+            <ComboBox Width="40" x:Name="selectBit2"
+   SelectedIndex="0">
+                <ComboBoxItem>0</ComboBoxItem>
+                <ComboBoxItem>1</ComboBoxItem>
+                <ComboBoxItem>2</ComboBoxItem>
+                <ComboBoxItem>3</ComboBoxItem>
+                <ComboBoxItem>4</ComboBoxItem>
+                <ComboBoxItem>5</ComboBoxItem>
+                <ComboBoxItem>6</ComboBoxItem>
+                <ComboBoxItem>7</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
+    </StackPanel>
 </Window>
