@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.IO;
 using System.Diagnostics;
+using Steg1;
 namespace steg1
 {
     /// <summary>
@@ -23,7 +24,8 @@ namespace steg1
         private string TXTInPath = string.Empty;
         private string BMPOutPath = string.Empty;
         private string TXTOutPath = string.Empty;
-
+		private string testBMPFolder = string.Empty;
+		private string refBMPPath = string.Empty;
 
 
         public MainWindow()
@@ -46,7 +48,6 @@ namespace steg1
 				string fileNameWithoutExt =
 					System.IO.Path.GetFileNameWithoutExtension(bmpPath);
 
-				// создаём подпапку с именем оригинального файла
 				string outputDir = System.IO.Path.Combine(
 					SelectedFolder,
 					fileNameWithoutExt
@@ -54,7 +55,6 @@ namespace steg1
 
 				Directory.CreateDirectory(outputDir);
 
-				// читаем исходный BMP один раз
 				List<byte> data = l4.GetBytesFromBMP(bmpPath);
 
 				for (int i = 0; i < 8; i++)
@@ -68,6 +68,13 @@ namespace steg1
 
 					l4.SetBytesToBMP(outputPath, result);
 				}
+
+				string outputPath2 = System.IO.Path.Combine(
+					outputDir,
+					$"{System.IO.Path.GetFileName(bmpPath)}"
+				);
+
+				l4.SetBytesToBMP(outputPath2, data);
 			}
 		}
 
@@ -84,7 +91,6 @@ namespace steg1
 				CheckFileExists = false,
 				CheckPathExists = true,
 
-				// важно: имя-заглушка
 				FileName = "Выбор папки"
 			};
 
@@ -122,6 +128,10 @@ namespace steg1
 
         private void CalcIntegration_Click(object sender, RoutedEventArgs e)
         {
+            if(BMPInPath == "" || TXTInPath == "")
+            {
+                return;
+            }
             List<byte> data = l4.GetBytesFromBMP(BMPInPath);
             List<byte> text = l4.GetBytesFromBMP(TXTInPath);
             int bits = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
@@ -165,11 +175,90 @@ namespace steg1
             l4.SetBytesToBMP(TXTOutPath, result);
         }
 
+		private void CalcIntegrationAll_Click(object sender, RoutedEventArgs e)
+		{
+			if (BMPInPath == "" || TXTInPath == "")
+			{
+				return;
+			}
+			List<byte> data = l4.GetBytesFromBMP(BMPInPath);
+			List<byte> text = l4.GetBytesFromBMP(TXTInPath);
+			List<byte> result = new List<byte>();
+
+
+			string SelectedFolderLocal = System.IO.Path.Combine(Path.GetDirectoryName(BMPInPath), $"TXT_{Path.GetFileNameWithoutExtension(BMPInPath)}");
+			Directory.CreateDirectory(SelectedFolderLocal);
+
+			for (int i = 0; i < 8; i++)
+            {
+
+				result = l7.TextToBMP(data, text, i);
 
 
 
-       
+				string outputPath = System.IO.Path.Combine(
+						SelectedFolderLocal,
+						$"{Path.GetFileNameWithoutExtension(BMPInPath)}_{i}.bmp"
+					);
+
+				l4.SetBytesToBMP(outputPath, result);
+
+			}
+			string outputPathOriginal = System.IO.Path.Combine(
+						SelectedFolderLocal,
+						$"{Path.GetFileName(BMPInPath)}"
+					);
+
+			l4.SetBytesToBMP(outputPathOriginal, data);
+
+		}
+
+		private void getFolder_Click(object sender, RoutedEventArgs e)
+		{
+			var dialog = new OpenFileDialog
+			{
+				Title = "Выберите папку",
+				CheckFileExists = false,
+				CheckPathExists = true,
+
+				FileName = "Выбор папки"
+			};
+
+			if (dialog.ShowDialog() == true)
+			{
+				testBMPFolder = Path.GetDirectoryName(dialog.FileName);
 
 
-    }
+			}
+		}
+
+		private void getOriginal_Click(object sender, RoutedEventArgs e)
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+
+
+			if (openFileDialog.ShowDialog() == true)
+			{
+				refBMPPath = openFileDialog.FileName;
+			}
+		}
+
+		private void calcMetrics_Click(object sender, RoutedEventArgs e)
+		{
+			metricsOutput.Clear();
+			string outputMetrics = string.Empty;
+
+			string[] bmpFiles = Directory.GetFiles(testBMPFolder, "*.bmp");
+			foreach (var bmpFile in bmpFiles) 
+			{
+				outputMetrics += ImageMetrics.CompareImages(refBMPPath, bmpFile);
+				outputMetrics += "\n";
+
+			}
+
+
+
+			metricsOutput.Text = outputMetrics;
+		}
+	}
 }
