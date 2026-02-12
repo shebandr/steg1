@@ -70,7 +70,7 @@
                     <Button x:Name="getOriginal" Click="getOriginal_Click" Margin="5">Выбрать оригинал</Button>
                     <Button x:Name="calcMetrics" Click="calcMetrics_Click" Margin="5">Посчитать метрики</Button>
                 </StackPanel>
-                <TextBox Width="600" Height="400" x:Name="metricsOutput"></TextBox>
+                <TextBox Width="600" Height="400" x:Name="metricsOutput"     FontFamily="Consolas"></TextBox>
             </StackPanel>
         </Border>
     </StackPanel>

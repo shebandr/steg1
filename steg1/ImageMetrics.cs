@@ -74,7 +74,17 @@ namespace Steg1
 
 			File.AppendAllText(csvPath, line.ToString());
 
-			return $"{Path.GetFileNameWithoutExtension(testPath)} - MSE= {mse:F4}  PSNR= {psnr:F2} dB  SSIM={ssim:F4}";
+			string name = Path.GetFileNameWithoutExtension(testPath);
+
+			// Ровно 10 символов
+			name = name.Length > 10
+				? name.Substring(0, 10)
+				: name.PadRight(10);
+
+			// Ровно 9 символов на число
+			return $"{name} - " + $"MSE= {mse,9:F4} " + $"PSNR= {psnr,6:F2} dB " +  $"SSIM= {ssim,6:F4}";
+
+
 		}
 	}
 }

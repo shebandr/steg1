@@ -17,9 +17,7 @@ namespace GPILabs
     {
         public static List<byte> SelectBiteFromBMP(List<byte> data, int byteIndex)
         {
-            /*Debug.Write("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa");
-*/
-
+            byteIndex = 7 - byteIndex;
             int colorsCount = BitConverter.ToInt32(data.GetRange(46, 50).ToArray(), 0);
             Debug.WriteLine(colorsCount);
             byte[] width = (data.GetRange(18, 4).ToArray());
