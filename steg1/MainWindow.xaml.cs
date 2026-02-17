@@ -132,12 +132,38 @@ namespace steg1
             {
                 return;
             }
+
+
             List<byte> data = l4.GetBytesFromBMP(BMPInPath);
-            List<byte> text = l4.GetBytesFromBMP(TXTInPath);
-            int bits = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
-            List<byte> result = new List<byte>();
+            List<byte> dataWM = l4.GetBytesFromBMP(TXTInPath);
             
-            result = l7.TextToBMP(data, text, bits);
+			
+			int bits = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
+            List<byte> result = new List<byte>();
+            string key = keyField.Text;
+			int contSize = WaterMark.getMaxSizeForContainer(data);
+			int WMSize = (dataWM.Count) * 8;
+
+
+
+			if (contSize >= WMSize + 32)
+			{
+
+			} else
+			{
+				sizeFileStatus.Content = $"вм слишком большая {WMSize + 32} > {contSize} " ;
+
+                return;
+			}
+			if(key == "")
+			{
+				key = "ТЕСТОВЫЙ КЛЮЧ";
+			}
+			WaterMark.GenPositions(contSize, key);
+
+
+
+                result = l7.TextToBMP(data, text, bits);
             
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             if (saveFileDialog.ShowDialog() == true)

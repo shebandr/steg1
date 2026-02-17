@@ -16,12 +16,17 @@
         </Border>
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
             <StackPanel>
-                <Label HorizontalAlignment="Center">Внедрение данных в заданную битовую плоскость.</Label>
+                <Label HorizontalAlignment="Center">Внедрение вотермарки в заданную битовую плоскость.</Label>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="getTXT" Margin="5" Click="getTXT_Click">Открыть .txt</Button>
-                    <Button x:Name="getBMP" Margin="5" Click="getBMP_Click">Открыть .bmp</Button>
-                    <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить текст в картинку</Button>
-                    <Button x:Name="CalcIntegrationAll" Margin="5" Click="CalcIntegrationAll_Click">Внедрить текст в картинку во все слои</Button>
+                    <Button x:Name="getTXT" Margin="5" Click="getTXT_Click">Открыть вотермарку</Button>
+                    <Button x:Name="getBMP" Margin="5" Click="getBMP_Click">Открыть контейнер</Button>
+                    <Label x:Name="sizeFileStatus" Width="150" HorizontalAlignment="Center">файлы не выбраны</Label>
+                    <Label>ключ:</Label>
+                    <TextBlock Width="150" x:Name="keyField" ></TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить вотермарку в картинку</Button>
+
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Label>Укажите бит:</Label>
@@ -41,25 +46,12 @@
         </Border>
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
             <StackPanel>
-                <Label HorizontalAlignment="Center">Извлечение данных из заданной битовой плоскости.</Label>
+                <Label HorizontalAlignment="Center">Извлечение вотермарки из заданной битовой плоскости.</Label>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="getBMP2" Margin="5" Click="getBMP2_Click">Открыть .bmp</Button>
-                    <Button x:Name="CalcExtraction" Margin="5" Click="CalcExtraction_Click">Извлечь текст из картинки</Button>
+                    <Button x:Name="CalcExtraction" Margin="5" Click="CalcExtraction_Click">Извлечь вотермарку из картинки</Button>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label>Укажите бит:</Label>
-                    <ComboBox Width="40" x:Name="selectBit2"
-           SelectedIndex="0">
-                        <ComboBoxItem >0</ComboBoxItem>
-                        <ComboBoxItem>1</ComboBoxItem>
-                        <ComboBoxItem>2</ComboBoxItem>
-                        <ComboBoxItem>3</ComboBoxItem>
-                        <ComboBoxItem>4</ComboBoxItem>
-                        <ComboBoxItem>5</ComboBoxItem>
-                        <ComboBoxItem>6</ComboBoxItem>
-                        <ComboBoxItem>7</ComboBoxItem>
-                    </ComboBox>
-                </StackPanel>
+              
             </StackPanel>
         </Border>
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 0" >
