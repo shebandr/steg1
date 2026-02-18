@@ -110,31 +110,48 @@ namespace steg1
 			payloadBytes.AddRange(watermarkBytes);
 
 			List<bool> payloadBits = l7.ByteListToBitList(payloadBytes);
-
+			int MVLength = payloadBits.Count;
 			if (payloadBits.Count > capacity)
 				throw new Exception("Watermark too large");
+
 
 			while (payloadBits.Count < capacity)
 				payloadBits.Add(false);
 
 			List<int> positions = GenPositions(capacity, key);
 
-			List<bool> shuffledBits = new List<bool>(payloadBits.Count);
-			for (int i = 0; i < payloadBits.Count; i++)
-				shuffledBits.Add(payloadBits[positions[i]]);
-
+			int max = 0;
+			foreach(int i in positions)
+			{
+				if(i> max) {  max = i; }
+			}
+			Debug.WriteLine($"{max}, {positions.Count}");
+			// 1. Копируем битовую плоскость
+			List<bool> planeBits = new List<bool>(capacity);
 			for (int i = 0; i < capacity; i++)
 			{
 				byte temp = result[pixelOffset + i];
+				planeBits.Add((temp & (1 << bitIndex)) != 0);
+			}
 
-				if (shuffledBits[i])
+			// 2. Вносим watermark по перемешанным позициям
+			for (int i = 0; i < MVLength; i++)
+			{
+				int pos = positions[i]; // перемешанная позиция внутри плоскости
+				planeBits[pos] = payloadBits[i]; // изменяем только нужные биты
+			}
+
+			// 3. Записываем обратно в оригинальный BMP
+			for (int i = 0; i < capacity; i++)
+			{
+				byte temp = result[pixelOffset + i];
+				if (planeBits[i])
 					temp |= (byte)(1 << bitIndex);
 				else
 					temp &= (byte)~(1 << bitIndex);
 
 				result[pixelOffset + i] = temp;
 			}
-
 			return result;
 		}
 
@@ -143,30 +160,36 @@ namespace steg1
 			int pixelOffset = BitConverter.ToInt32(data.GetRange(10, 4).ToArray(), 0);
 			int capacity = data.Count - pixelOffset;
 
-			List<bool> bits = new List<bool>(capacity);
+			// 1. Читаем всю плоскость
+			List<bool> planeBits = new List<bool>(capacity);
 			for (int i = 0; i < capacity; i++)
 			{
 				byte temp = data[pixelOffset + i];
-				bits.Add((temp & (1 << bitIndex)) != 0);
+				planeBits.Add((temp & (1 << bitIndex)) != 0);
 			}
 
+			// 2. Генерируем те же позиции
 			List<int> positions = GenPositions(capacity, key);
 
-			List<bool> unshuffled = new List<bool>(bits.Count);
-			for (int i = 0; i < bits.Count; i++)
-				unshuffled.Add(false);
-			for (int i = 0; i < bits.Count; i++)
-				unshuffled[positions[i]] = bits[i];
+			// 3. Читаем длину напрямую по positions
+			List<bool> lengthBits = new List<bool>(32);
+			for (int i = 0; i < 32; i++)
+				lengthBits.Add(planeBits[positions[i]]);
 
-			int wmLength = BitConverter.ToInt32(l7.BitListToByteList(unshuffled.Take(32).ToList()).ToArray(), 0);
+			int wmLength = BitConverter.ToInt32(
+				l7.BitListToByteList(lengthBits).ToArray(), 0);
 
 			if (wmLength <= 0 || wmLength > capacity / 8)
 				throw new Exception($"Invalid watermark length: {wmLength}");
 
-			List<bool> wmBits = unshuffled.Skip(32).Take(wmLength * 8).ToList();
+			// 4. Читаем сами данные тем же способом
+			List<bool> wmBits = new List<bool>(wmLength * 8);
+			for (int i = 32; i < 32 + wmLength * 8; i++)
+				wmBits.Add(planeBits[positions[i]]);
 
 			return l7.BitListToByteList(wmBits);
 		}
+
 
 
 
