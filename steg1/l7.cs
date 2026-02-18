@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace GPILabs
+namespace steg1
 {
 	internal class l7
 	{

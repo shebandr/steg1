@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Diagnostics;
 
-namespace GPILabs
+namespace steg1
 {
     internal class l4
     {

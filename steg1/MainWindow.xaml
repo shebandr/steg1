@@ -20,12 +20,13 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="getTXT" Margin="5" Click="getTXT_Click">Открыть вотермарку</Button>
                     <Button x:Name="getBMP" Margin="5" Click="getBMP_Click">Открыть контейнер</Button>
-                    <Label x:Name="sizeFileStatus" Width="150" HorizontalAlignment="Center">файлы не выбраны</Label>
+                    <Label x:Name="sizeFileStatus" Width="350" HorizontalAlignment="Center">файлы не выбраны</Label>
                     <Label>ключ:</Label>
-                    <TextBlock Width="150" x:Name="keyField" ></TextBlock>
+                    <TextBox Width="150" x:Name="keyField" ></TextBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить вотермарку в картинку</Button>
+                    <Button x:Name="CalcIntegrationAll" Margin="5" Click="CalcIntegrationAll_Click">Внедрить вотермарку в картинку во все слои</Button>
 
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
