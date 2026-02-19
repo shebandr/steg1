@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Printing;
-using System.Threading.Tasks;
-using System.Windows.Documents;
 using System.Security.Cryptography;
 using System.Text;
-using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Windows.Documents;
 
 
 namespace steg1
 {
-    internal class WaterMark
-    {
+	internal class WaterMark
+	{
 
 		private static int GetStableSeed(string key)
 		{
@@ -37,11 +38,11 @@ namespace steg1
 
 
 		public static int getMaxSizeForContainer(List<byte> data)
-        {
-            byte[] width = (data.GetRange(18, 4).ToArray());
-            byte[] height = (data.GetRange(22, 4).ToArray());
-            return (BitConverter.ToInt32(width) * BitConverter.ToInt32(height))/8*8;
-        }
+		{
+			byte[] width = (data.GetRange(18, 4).ToArray());
+			byte[] height = (data.GetRange(22, 4).ToArray());
+			return (BitConverter.ToInt32(width) * BitConverter.ToInt32(height)) / 8 * 8;
+		}
 
 		public static List<int> GenPositions(int size, string key)
 		{
@@ -121,12 +122,11 @@ namespace steg1
 			List<int> positions = GenPositions(capacity, key);
 
 			int max = 0;
-			foreach(int i in positions)
+			foreach (int i in positions)
 			{
-				if(i> max) {  max = i; }
+				if (i > max) { max = i; }
 			}
 			Debug.WriteLine($"{max}, {positions.Count}");
-			// 1. Копируем битовую плоскость
 			List<bool> planeBits = new List<bool>(capacity);
 			for (int i = 0; i < capacity; i++)
 			{
@@ -134,14 +134,12 @@ namespace steg1
 				planeBits.Add((temp & (1 << bitIndex)) != 0);
 			}
 
-			// 2. Вносим watermark по перемешанным позициям
 			for (int i = 0; i < MVLength; i++)
 			{
-				int pos = positions[i]; // перемешанная позиция внутри плоскости
-				planeBits[pos] = payloadBits[i]; // изменяем только нужные биты
+				int pos = positions[i];
+				planeBits[pos] = payloadBits[i];
 			}
 
-			// 3. Записываем обратно в оригинальный BMP
 			for (int i = 0; i < capacity; i++)
 			{
 				byte temp = result[pixelOffset + i];
@@ -160,7 +158,6 @@ namespace steg1
 			int pixelOffset = BitConverter.ToInt32(data.GetRange(10, 4).ToArray(), 0);
 			int capacity = data.Count - pixelOffset;
 
-			// 1. Читаем всю плоскость
 			List<bool> planeBits = new List<bool>(capacity);
 			for (int i = 0; i < capacity; i++)
 			{
@@ -168,10 +165,8 @@ namespace steg1
 				planeBits.Add((temp & (1 << bitIndex)) != 0);
 			}
 
-			// 2. Генерируем те же позиции
 			List<int> positions = GenPositions(capacity, key);
 
-			// 3. Читаем длину напрямую по positions
 			List<bool> lengthBits = new List<bool>(32);
 			for (int i = 0; i < 32; i++)
 				lengthBits.Add(planeBits[positions[i]]);
@@ -182,7 +177,6 @@ namespace steg1
 			if (wmLength <= 0 || wmLength > capacity / 8)
 				throw new Exception($"Invalid watermark length: {wmLength}");
 
-			// 4. Читаем сами данные тем же способом
 			List<bool> wmBits = new List<bool>(wmLength * 8);
 			for (int i = 32; i < 32 + wmLength * 8; i++)
 				wmBits.Add(planeBits[positions[i]]);
@@ -194,6 +188,165 @@ namespace steg1
 
 
 
+
+		private static List<byte> GetImageWithoutBitPlane(List<byte> data, int pixelOffset, int bitIndex)
+		{
+			List<byte> copy = new List<byte>(data);
+
+			for (int i = pixelOffset; i < copy.Count; i++)
+			{
+				copy[i] = (byte)(copy[i] & ~(1 << bitIndex));
+			}
+
+			return copy;
+		}
+
+		private static double[] ComputeGradientMap(List<byte> data, int pixelOffset, int width, int height)
+		{
+			int stride = ((width + 3) / 4) * 4;
+			double[] grad = new double[stride * height];
+
+			for (int y = 1; y < height - 1; y++)
+			{
+				for (int x = 1; x < width - 1; x++)
+				{
+					int idx = y * stride + x;
+
+					int p00 = data[pixelOffset + (y - 1) * stride + (x - 1)];
+					int p01 = data[pixelOffset + (y - 1) * stride + (x)];
+					int p02 = data[pixelOffset + (y - 1) * stride + (x + 1)];
+					int p10 = data[pixelOffset + (y) * stride + (x - 1)];
+					int p12 = data[pixelOffset + (y) * stride + (x + 1)];
+					int p20 = data[pixelOffset + (y + 1) * stride + (x - 1)];
+					int p21 = data[pixelOffset + (y + 1) * stride + (x)];
+					int p22 = data[pixelOffset + (y + 1) * stride + (x + 1)];
+
+					int gx =
+						-p00 - 2 * p10 - p20 +
+						 p02 + 2 * p12 + p22;
+
+					int gy =
+						-p00 - 2 * p01 - p02 +
+						 p20 + 2 * p21 + p22;
+
+					grad[idx] = Math.Sqrt(gx * gx + gy * gy);
+				}
+			}
+
+			return grad;
+		}
+
+
+		public static List<byte> SetWMToBMPAdaptive(List<byte> data, List<byte> watermarkBytes, string key, int bitIndex)
+		{
+			List<byte> result = new List<byte>(data);
+
+			int pixelOffset = BitConverter.ToInt32(data.GetRange(10, 4).ToArray(), 0);
+			int width = BitConverter.ToInt32(data.GetRange(18, 4).ToArray(), 0);
+			int height = BitConverter.ToInt32(data.GetRange(22, 4).ToArray(), 0);
+
+			int stride = ((width + 3) / 4) * 4;
+			int capacity = stride * height;
+
+			// Формируем payload
+			int wmLength = watermarkBytes.Count;
+			byte[] lengthBytes = BitConverter.GetBytes(wmLength);
+
+			List<byte> payloadBytes = new List<byte>();
+			payloadBytes.AddRange(lengthBytes);
+			payloadBytes.AddRange(watermarkBytes);
+
+			List<bool> payloadBits = l7.ByteListToBitList(payloadBytes);
+
+			if (payloadBits.Count > capacity)
+				throw new Exception("Watermark too large");
+
+			List<byte> cleanData = GetImageWithoutBitPlane(data, pixelOffset, bitIndex);
+
+			double[] gradient = ComputeGradientMap(cleanData, pixelOffset, width, height);
+
+			List<int> indices = Enumerable.Range(0, capacity)
+										  .OrderByDescending(i => gradient[i])
+										  .ToList();
+
+			int seed = GetStableSeed(key);
+			Random rnd = new Random(seed);
+
+			for (int i = indices.Count - 1; i > 0; i--)
+			{
+				int j = rnd.Next(i + 1);
+				(indices[i], indices[j]) = (indices[j], indices[i]);
+			}
+
+			for (int i = 0; i < payloadBits.Count; i++)
+			{
+				int pos = indices[i];
+				byte temp = result[pixelOffset + pos];
+
+				if (payloadBits[i])
+					temp |= (byte)(1 << bitIndex);
+				else
+					temp &= (byte)~(1 << bitIndex);
+
+				result[pixelOffset + pos] = temp;
+			}
+
+			return result;
+		}
+
+
+		public static List<byte> GetWMFromBMPAdaptive(List<byte> data, string key, int bitIndex)
+		{
+			int pixelOffset = BitConverter.ToInt32(data.GetRange(10, 4).ToArray(), 0);
+			int width = BitConverter.ToInt32(data.GetRange(18, 4).ToArray(), 0);
+			int height = BitConverter.ToInt32(data.GetRange(22, 4).ToArray(), 0);
+
+			int stride = ((width + 3) / 4) * 4;
+			int capacity = stride * height;
+
+			List<byte> cleanData = GetImageWithoutBitPlane(data, pixelOffset, bitIndex);
+
+			double[] gradient = ComputeGradientMap(cleanData, pixelOffset, width, height);
+
+			List<int> indices = Enumerable.Range(0, capacity)
+										  .OrderByDescending(i => gradient[i])
+										  .ToList();
+
+			int seed = GetStableSeed(key);
+			Random rnd = new Random(seed);
+
+			for (int i = indices.Count - 1; i > 0; i--)
+			{
+				int j = rnd.Next(i + 1);
+				(indices[i], indices[j]) = (indices[j], indices[i]);
+			}
+
+			List<bool> lengthBits = new List<bool>();
+
+			for (int i = 0; i < 32; i++)
+			{
+				int pos = indices[i];
+				byte temp = data[pixelOffset + pos];
+				lengthBits.Add((temp & (1 << bitIndex)) != 0);
+			}
+
+			int wmLength = BitConverter.ToInt32(
+				l7.BitListToByteList(lengthBits).ToArray(), 0);
+
+			if (wmLength <= 0 || wmLength > capacity / 8)
+				throw new Exception($"Invalid watermark length: {wmLength}");
+
+			List<bool> wmBits = new List<bool>();
+
+			for (int i = 32; i < 32 + wmLength * 8; i++)
+			{
+				int pos = indices[i];
+				byte temp = data[pixelOffset + pos];
+				wmBits.Add((temp & (1 << bitIndex)) != 0);
+			}
+
+			return l7.BitListToByteList(wmBits);
+		}
 
 
 

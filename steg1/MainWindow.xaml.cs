@@ -242,7 +242,113 @@ namespace steg1
             }
         }
 
-        private void CalcExtraction_Click(object sender, RoutedEventArgs e)
+		private void CalcIntegration2_Click(object sender, RoutedEventArgs e)
+		{
+			if (BMPInPath == "" || TXTInPath == "")
+			{
+				return;
+			}
+
+
+			List<byte> data = l4.GetBytesFromBMP(BMPInPath);
+			List<byte> dataWM = l4.GetBytesFromBMP(TXTInPath);
+
+
+			int bits = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
+			string key = keyField.Text;
+			int contSize = WaterMark.getMaxSizeForContainer(data);
+			int WMSize = (dataWM.Count) * 8;
+
+
+
+			if (contSize >= WMSize + 32)
+			{
+
+				sizeFileStatus.Content = $"вм подходит {WMSize + 32} > {contSize} ";
+			}
+			else
+			{
+				sizeFileStatus.Content = $"вм слишком большая {WMSize + 32} > {contSize} ";
+
+				return;
+			}
+			if (key == "")
+			{
+				key = defaultKey;
+			}
+			List<byte> data2 = WaterMark.SetWMToBMPAdaptive(data, dataWM, key, bits);
+
+			SaveFileDialog saveFileDialog = new SaveFileDialog();
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				BMPOutPath = saveFileDialog.FileName;
+			}
+			l4.SetBytesToBMP(BMPOutPath, data2);
+		}
+
+		private void CalcIntegrationAll2_Click(object sender, RoutedEventArgs e)
+		{
+			if (BMPInPath == "" || TXTInPath == "")
+			{
+				return;
+			}
+
+
+			List<byte> data = l4.GetBytesFromBMP(BMPInPath);
+			List<byte> dataWM = l4.GetBytesFromBMP(TXTInPath);
+
+
+			int bits = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
+			string key = keyField.Text;
+			int contSize = WaterMark.getMaxSizeForContainer(data);
+			int WMSize = (dataWM.Count) * 8;
+
+
+
+			if (contSize >= WMSize + 32)
+			{
+
+				sizeFileStatus.Content = $"вм подходит {WMSize + 32} > {contSize} ";
+			}
+			else
+			{
+				sizeFileStatus.Content = $"вм слишком большая {WMSize + 32} > {contSize} ";
+
+				return;
+			}
+			if (key == "")
+			{
+				key = defaultKey;
+			}
+
+			string SelectedFolderLocal = System.IO.Path.Combine(Path.GetDirectoryName(BMPInPath), $"TXT_{Path.GetFileNameWithoutExtension(BMPInPath)}");
+			Directory.CreateDirectory(SelectedFolderLocal);
+
+			for (int i = 0; i < 8; i++)
+			{
+
+
+				List<byte> data2 = WaterMark.SetWMToBMPAdaptive(data, dataWM, key, i);
+
+
+
+				string outputPath = System.IO.Path.Combine(
+						SelectedFolderLocal,
+						$"{Path.GetFileNameWithoutExtension(BMPInPath)}_{i}.bmp"
+					);
+
+				l4.SetBytesToBMP(outputPath, data2);
+
+			}
+			string outputPathOriginal = System.IO.Path.Combine(
+						SelectedFolderLocal,
+						$"{Path.GetFileName(BMPInPath)}"
+					);
+
+			l4.SetBytesToBMP(outputPathOriginal, data);
+		}
+
+		private void CalcExtractionLSB_Click(object sender, RoutedEventArgs e)
         {
             List<byte> data = l4.GetBytesFromBMP(BMPInPath);
             int bits = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
@@ -264,7 +370,27 @@ namespace steg1
             l4.SetBytesToBMP(TXTOutPath, result);
         }
 
-		
+		private void CalcExtractionAdaptive_Click(object sender, RoutedEventArgs e)
+		{
+			List<byte> data = l4.GetBytesFromBMP(BMPInPath);
+			int bits = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
+			List<byte> result = new List<byte>();
+			string key = keyField.Text;
+			if (key == "")
+			{
+				key = defaultKey;
+			}
+			result = WaterMark.GetWMFromBMPAdaptive(data, key, bits);
+
+			SaveFileDialog saveFileDialog = new SaveFileDialog();
+			Debug.WriteLine($"{data.Count} {result.Count}");
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				TXTOutPath = saveFileDialog.FileName;
+			}
+
+			l4.SetBytesToBMP(TXTOutPath, result);
+		}
 
 		private void getFolder_Click(object sender, RoutedEventArgs e)
 		{

@@ -24,9 +24,16 @@
                     <Label>ключ:</Label>
                     <TextBox Width="150" x:Name="keyField" ></TextBox>
                 </StackPanel>
+                <Label HorizontalAlignment="Center">LSB</Label>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить вотермарку в картинку</Button>
                     <Button x:Name="CalcIntegrationAll" Margin="5" Click="CalcIntegrationAll_Click">Внедрить вотермарку в картинку во все слои</Button>
+
+                </StackPanel>
+                <Label HorizontalAlignment="Center">Дисперсия</Label>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="CalcIntegration2" Margin="5" Click="CalcIntegration2_Click">Внедрить вотермарку в картинку</Button>
+                    <Button x:Name="CalcIntegrationAll2" Margin="5" Click="CalcIntegrationAll2_Click">Внедрить вотермарку в картинку во все слои</Button>
 
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -50,7 +57,8 @@
                 <Label HorizontalAlignment="Center">Извлечение вотермарки из заданной битовой плоскости.</Label>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="getBMP2" Margin="5" Click="getBMP2_Click">Открыть .bmp</Button>
-                    <Button x:Name="CalcExtraction" Margin="5" Click="CalcExtraction_Click">Извлечь вотермарку из картинки</Button>
+                    <Button x:Name="CalcExtractionLSB" Margin="5" Click="CalcExtractionLSB_Click">Извлечь вотермарку из картинки LSB</Button>
+                    <Button x:Name="CalcExtractionAdaptive" Margin="5" Click="CalcExtractionAdaptive_Click">Извлечь вотермарку из картинки апдаптивно</Button>
                 </StackPanel>
               
             </StackPanel>
