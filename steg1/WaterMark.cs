@@ -313,7 +313,6 @@ namespace steg1
             int stride = ((width + 3) / 4) * 4;
             int capacity = width * height;
 
-            // Получаем те же индексы по градиенту
             List<byte> cleanData = GetImageWithoutBitPlane(data, pixelOffset, bitIndex);
             double[] gradient = ComputeGradientMap(cleanData, pixelOffset, width, height);
 
@@ -321,7 +320,6 @@ namespace steg1
                                           .OrderByDescending(i => gradient[i])
                                           .ToList();
 
-            // 1️⃣ Сначала считываем ВСЕ потенциальные биты payload
             List<bool> allBits = new List<bool>();
 
             for (int i = 0; i < capacity; i++)
@@ -334,11 +332,7 @@ namespace steg1
             int seed = GetStableSeed(key);
             List<int> positions = GenPositions(width * height, key);
 
-            // watermarkBits уже считаны из изображения
-            // выполняем обратный Fisher-Yates
-
-
-            // 3️⃣ Теперь первые 32 бита — длина
+           
             List<bool> lengthBits = allBits.Take(32).ToList();
 
             int wmLength = BitConverter.ToInt32(
@@ -347,7 +341,6 @@ namespace steg1
             if (wmLength <= 0 || wmLength > capacity / 8)
                 throw new Exception($"Invalid watermark length: {wmLength}");
 
-            // 4️⃣ Читаем watermark
             List<bool> wmBits = allBits.Skip(32)
                                        .Take(wmLength * 8)
                                        .ToList();

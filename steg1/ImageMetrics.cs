@@ -2,6 +2,7 @@
 using OpenCvSharp.Quality;
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using ImreadModes = OpenCvSharp.ImreadModes;
 
@@ -37,16 +38,7 @@ namespace Steg1
 
 			mse /= (refImg.Rows * refImg.Cols);
 
-			int[] hist = new int[256];
-
-			for (int y = 0; y < testImg.Rows; y++)
-			{
-				for (int x = 0; x < testImg.Cols; x++)
-				{
-					byte val = testImg.At<byte>(y, x);
-					hist[val]++;
-				}
-			}
+			List<int> hist = BuildHistogram(testPath);
 
 			string folder = Path.GetDirectoryName(refPath)!;
 			string csvPath = Path.Combine(
@@ -85,6 +77,23 @@ namespace Steg1
 			return $"{name} - " + $"MSE= {mse,9:F4} " + $"PSNR= {psnr,6:F2} dB " +  $"SSIM= {ssim,6:F4}";
 
 
+		}
+
+		public static List<int> BuildHistogram(string filePath)
+		{
+
+			using Mat testImg = Cv2.ImRead(filePath, ImreadModes.Grayscale);
+			List<int> hist = Enumerable.Repeat(0, 256).ToList();
+
+			for (int y = 0; y < testImg.Rows; y++)
+			{
+				for (int x = 0; x < testImg.Cols; x++)
+				{
+					byte val = testImg.At<byte>(y, x);
+					hist[val]++;
+				}
+			}
+			return hist;
 		}
 	}
 }

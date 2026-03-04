@@ -27,8 +27,9 @@ namespace steg1
 		private string testBMPFolder = string.Empty;
 		private string refBMPPath = string.Empty;
 		private string defaultKey = "TESTKEY";
-
-        public MainWindow()
+		private List<int> MPPZMin = new List<int>();
+		private List<int> MPPZMax = new List<int>();
+		public MainWindow()
         {
 
             InitializeComponent();
@@ -144,22 +145,9 @@ namespace steg1
 			int WMSize = (dataWM.Count) * 8;
 
 
+			List<int> hist = ImageMetrics.BuildHistogram(BMPInPath);
 
-			if (contSize >= WMSize + 32)
-			{
-
-				sizeFileStatus.Content = $"вм подходит {WMSize + 32} > {contSize} ";
-			} else
-			{
-				sizeFileStatus.Content = $"вм слишком большая {WMSize + 32} > {contSize} " ;
-
-                return;
-			}
-			if(key == "")
-			{
-				key = defaultKey;
-			}
-			List<byte> data2 = WaterMark.SetWMToBMP(data, dataWM, key, bits);
+			(List<byte> data2, MPPZMin, MPPZMax) = HistogramShifting.MPPZIn(hist, data, dataWM);
 
 			SaveFileDialog saveFileDialog = new SaveFileDialog();
             if (saveFileDialog.ShowDialog() == true)
@@ -351,24 +339,25 @@ namespace steg1
 		private void CalcExtractionLSB_Click(object sender, RoutedEventArgs e)
         {
             List<byte> data = l4.GetBytesFromBMP(BMPInPath);
-            int bits = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
-            List<byte> result = new List<byte>();
-			string key = keyField.Text;
-			if (key == "")
-			{
-				key = defaultKey;
-			}
-			result = WaterMark.GetWMFromBMP(data, key, bits);
+			List<byte> result = new List<byte>();
+			List<byte> original = new List<byte>();
+			
+			(result, original) = HistogramShifting.MPPZOut(data, MPPZMin, MPPZMax);
             
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-			Debug.WriteLine($"{data.Count} {result.Count}");
 			if (saveFileDialog.ShowDialog() == true)
             {
                 TXTOutPath = saveFileDialog.FileName;
             }
-			
-            l4.SetBytesToBMP(TXTOutPath, result);
-        }
+			l4.SetBytesToBMP(TXTOutPath, result);
+
+			saveFileDialog = new SaveFileDialog();
+			if (saveFileDialog.ShowDialog() == true)
+			{
+				TXTOutPath = saveFileDialog.FileName;
+			}
+			l4.SetBytesToBMP(TXTOutPath, original);
+		}
 
 		private void CalcExtractionAdaptive_Click(object sender, RoutedEventArgs e)
 		{
