@@ -11,12 +11,12 @@ namespace steg1
     class HistogramShifting
     {
 
-        static (List<int>, List<int>) MaxMinSearch(List<int> hist)
+        static (List<int>, List<int>) MaxMinSearch(List<int> hist, int count)
 		{
 			List<int> min = new List<int>();
 			List<int> max = new List<int>();
 			List<int> tempHist = new List<int>(hist);
-			for(int q = 0; q<3; q++)
+			for(int q = 0; q< count; q++)
 			{
 				int tempMin = int.MaxValue;
 				int tempIndex = 0;
@@ -36,20 +36,39 @@ namespace steg1
 
 			min.Sort();
 
-			max.Add(MaxSearch(new List<int>(hist), 0, min[0])); //a1
 
-			max.Add(MaxSearch(new List<int>(hist), min[0], (min[0] + min[1])/2)); // a12
-			max.Add(MaxSearch(new List<int>(hist), (min[0] + min[1]) / 2, min[1])); // a21
 
-			max.Add(MaxSearch(new List<int>(hist), min[1], (min[1] + min[2]) / 2)); // a23
-			max.Add(MaxSearch(new List<int>(hist), (min[1] + min[2]) / 2, min[2])); // a32
 
-			max.Add(MaxSearch(new List<int>(hist), min[2], hist.Count)); // a3
+			max.Add(MaxSearch(new List<int>(hist), 0, min[0])); 
+			for(int i = 0; i < count-1; i++)
+			{
+				max.Add(MaxSearch(new List<int>(hist), min[i], (min[i] + min[i + 1]) / 2)); 
+				max.Add(MaxSearch(new List<int>(hist), (min[i] + min[i+1]) / 2, min[i + 1])); 
+
+			}
+			max.Add(MaxSearch(new List<int>(hist), min[count-1], hist.Count));
+
 
 			List<int> selectedMax = new List<int>();
-			selectedMax.Add(max[max[0] > max[1] ? 0 : 1]); // (a1,a12) 
-			selectedMax.Add(max[max[2] > max[3] ? 2 : 3]); // (a21,a23)
-			selectedMax.Add(max[max[4] > max[5] ? 4 : 5]); // (a32,a3)
+
+
+			for(int i = 0; i<count; i++)
+			{
+				
+				int pairStart = i * 2;
+
+				// защита от выхода за границы (последняя пара может быть одной)
+				if (pairStart + 1 < max.Count)
+				{
+					selectedMax.Add(max[max[pairStart] > max[pairStart + 1] ? pairStart : pairStart + 1]);
+				}
+				else
+				{
+					// если остался один максимум в конце
+					selectedMax.Add(max[pairStart]);
+				}
+				
+			}
 
 			Debug.WriteLine($"{min[0]} {min[1]} {min[2]} ");
 			Debug.WriteLine($"{selectedMax[0]} {selectedMax[1]} {selectedMax[2]} ");
@@ -83,26 +102,35 @@ namespace steg1
 			payloadBytes.AddRange(dataHide);
 
 
-			List<bool> dataHideBits = l7.ByteListToBitList(dataHide);
+			List<bool> dataHideBits = l7.ByteListToBitList(payloadBytes);
 
 
 			int pixelOffset = BitConverter.ToInt32(originalImage.GetRange(10, 4).ToArray(), 0);
-			var (zeroPoints, peakPoints) = MaxMinSearch(hist);
+			var (zeroPoints, peakPoints) = MaxMinSearch(hist, 3);
 
 
 			int capacity = 0;
 			foreach (var peak in peakPoints)
 				capacity += hist[peak];
 
+			
+
+			Debug.WriteLine($"емкость {capacity} бит или {capacity/8} байт");
 			if (dataHideBits.Count > capacity)
 				throw new Exception($"Слишком много данных: доступно {capacity} бит, а передано {dataHideBits.Count} бит.");
 
 			List<byte> markedImage = new List<byte>(originalImage);
+
+			//считаем индексы нулей для сохранения
+			List<List<int>> zerosInfo = new List<List<int>>();
+			
+
 			int dataIndex = 0;
 
 			int dataHideIndex = 0;
 			for (int p = 0; p < peakPoints.Count; p++)
 			{
+				zerosInfo.Add(new List<int>());
 				int peak = peakPoints[p];
 				int zero = zeroPoints[p];
 				//логика сдвига
@@ -181,7 +209,7 @@ namespace steg1
 			List<byte> restoredImage = new List<byte>(markedImage);
 
 			// обрабатываем каждую пару пик–ноль
-			for (int p = peakPoints.Count-1; p >= 0; p--)
+			for (int p = 0; p < peakPoints.Count; p++)
 			{
 				int peak = peakPoints[p];
 				int zero = zeroPoints[p];
@@ -232,14 +260,14 @@ namespace steg1
 
 					if (zero < peak)
 					{
-						if ((int)pixel < peak && (int)pixel > zero)
+						if ((int)pixel < peak && (int)pixel >= zero)
 						{
 							pixel++;
 						}
 					}
 					else
 					{
-						if ((int)pixel > peak && (int)pixel < zero)
+						if ((int)pixel > peak && (int)pixel <= zero)
 						{
 							pixel--;
 						}
