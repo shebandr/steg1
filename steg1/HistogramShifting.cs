@@ -92,7 +92,7 @@ namespace steg1
 		}
 
 		public static (List<byte> markedImage, List<int> zeroPoints, List<int> peakPoints) MPPZIn(
-	List<int> hist, List<byte> originalImage, List<byte> dataHide)
+	List<int> hist, List<byte> originalImage, List<byte> dataHide, int peakCount)
 		{
 			int wmLength = dataHide.Count;
 			Debug.WriteLine(wmLength);
@@ -107,7 +107,7 @@ namespace steg1
 
 
 			int pixelOffset = BitConverter.ToInt32(originalImage.GetRange(10, 4).ToArray(), 0);
-			var (zeroPoints, peakPoints) = MaxMinSearch(hist, 3);
+			var (zeroPoints, peakPoints) = MaxMinSearch(hist, peakCount);
 
 
 			int capacity = 0;
@@ -376,6 +376,39 @@ namespace steg1
 
 
 			return (data, markedImage);
+		}
+
+
+
+		public static (int maxCapacity, int freeCapacity) CalcSpace(List<int> hist, List<byte> originalImage, List<byte> dataHide, int peakCount)
+		{
+			int wmLength = dataHide.Count;
+			Debug.WriteLine(wmLength);
+			byte[] lengthBytes = BitConverter.GetBytes(wmLength);
+
+			List<byte> payloadBytes = new List<byte>();
+
+
+
+			List<bool> dataHideBits = l7.ByteListToBitList(payloadBytes);
+
+
+			var (zeroPoints, peakPoints) = MaxMinSearch(hist, peakCount);
+
+
+			int capacity = 0;
+			foreach (var peak in peakPoints)
+				capacity += hist[peak];
+
+			int capacityForZeros = 0;
+			foreach (var zero in zeroPoints)
+				capacityForZeros += hist[zero];
+
+
+			Debug.WriteLine($"емкость {capacity} бит или {capacity / 8} байт");
+	
+		return (capacity/8,  (capacityForZeros + peakCount) * 4 );
+			
 		}
 
 	}
