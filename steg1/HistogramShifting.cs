@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -125,7 +126,6 @@ namespace steg1
 			List<List<int>> zerosInfo = new List<List<int>>();
 			
 
-			int dataIndex = 0;
 
 			int dataHideIndex = 0;
 			for (int p = 0; p < peakPoints.Count; p++)
@@ -133,6 +133,44 @@ namespace steg1
 				zerosInfo.Add(new List<int>());
 				int peak = peakPoints[p];
 				int zero = zeroPoints[p];
+				// логика сохранения нулей
+				for (int i = pixelOffset; i < markedImage.Count; i++)
+				{
+					byte pixel = markedImage[i];
+
+					if (pixel == zero)
+					{
+						zerosInfo[p].Add(i);
+					}
+
+				}
+			}
+
+			List<int> zeros = new List<int>();
+			foreach (var a in zerosInfo) 
+			{
+				zeros.Add(a.Count);
+				zeros.AddRange(a);
+			}
+			zeros.Add(Int32.MaxValue);
+
+			var zerosBytes = new List<byte>();
+			foreach (var a in zeros)
+			{
+				zerosBytes.AddRange(BitConverter.GetBytes(a).ToList());
+			}
+			dataHideBits.AddRange(l7.ByteListToBitList(zerosBytes));
+
+
+			Debug.WriteLine($"емкость {capacity} бит или {capacity / 8} байт, объем встраиваемых данных {dataHideBits.Count/8} байт");
+			if (dataHideBits.Count > capacity)
+				throw new Exception($"Слишком много данных: доступно {capacity} бит, а передано {dataHideBits.Count} бит.");
+
+			for (int p = 0; p < peakPoints.Count; p++)
+			{
+				int peak = peakPoints[p];
+				int zero = zeroPoints[p];
+
 				//логика сдвига
 				for (int i = pixelOffset; i < markedImage.Count; i++)
 				{
@@ -201,7 +239,7 @@ namespace steg1
 			return (markedImage, zeroPoints, peakPoints);
 		}
 
-		public static (List<byte> payload, List<byte> ) MPPZOut(
+		public static (List<byte> payload, List<byte>) MPPZOut(
 	List<byte> markedImage, List<int> zeroPoints, List<int> peakPoints)
 		{
 			int pixelOffset = BitConverter.ToInt32(markedImage.GetRange(10, 4).ToArray(), 0);
@@ -252,44 +290,89 @@ namespace steg1
 
 
 				}
-
-				//логика сдвига
-				for (int i = pixelOffset; i < markedImage.Count; i++)
-				{
-					byte pixel = markedImage[i];
-
-					if (zero < peak)
-					{
-						if ((int)pixel < peak && (int)pixel >= zero)
-						{
-							pixel++;
-						}
-					}
-					else
-					{
-						if ((int)pixel > peak && (int)pixel <= zero)
-						{
-							pixel--;
-						}
-					}
-					markedImage[i] = pixel;
-				}
-
-
 			}
 
-			List<bool> lengthBits = extractedBits.Take(32).ToList();
-			int wmLength = BitConverter.ToInt32(
-				l7.BitListToByteList(lengthBits).ToArray(), 0);
+		
+			
+
+
+
+
+			List<bool> lengthBits = extractedBits.Take(32).ToList(); //восстановление исходной информации
+			int wmLength = BitConverter.ToInt32(l7.BitListToByteList(lengthBits).ToArray(), 0);
 			Debug.WriteLine(wmLength);
-
-			List<bool> wmBits = extractedBits.Skip(32)
-									   .Take(wmLength * 8)
-									   .ToList();
-
-
-
+			List<bool> wmBits = extractedBits.Skip(32).Take(wmLength * 8).ToList();
 			List<byte> data = l7.BitListToByteList(wmBits);
+
+
+			List<bool> zerosBytesList = extractedBits.Skip(32 + wmLength * 8).ToList(); //восстановление индексов нулей
+
+			List<byte> zerosAllBytes = l7.BitListToByteList(zerosBytesList);
+			List<List<int>> zerosIndexes = new List<List<int>>();
+
+			using (var ms = new MemoryStream(zerosAllBytes.ToArray()))
+			using (var br = new BinaryReader(ms))
+			{
+				while (br.BaseStream.Position + 4 <= br.BaseStream.Length)
+				{
+					int blockLength = br.ReadInt32();
+					if (blockLength == Int32.MaxValue)
+						break;
+
+					List<int> blockIndexes = new List<int>();
+					for (int i = 0; i < blockLength; i++)
+					{
+						if (br.BaseStream.Position + 4 > br.BaseStream.Length)
+							throw new Exception("Ошибка: неожиданный конец данных при чтении индексов нулей.");
+
+						blockIndexes.Add(br.ReadInt32());
+					}
+
+					zerosIndexes.Add(blockIndexes);
+				}
+			}
+
+
+
+			for (int p = 0; p < peakPoints.Count; p++) // ЛОГИКА ВОССТАНОВЛЕНИЯ
+			{
+				int peak = peakPoints[p];
+				int zero = zeroPoints[p];
+
+					//логика сдвига
+				for (int i = pixelOffset; i < markedImage.Count; i++)
+				{
+
+					byte pixel = markedImage[i];
+
+
+					if (zerosIndexes[p].Contains(i))
+					{
+
+					} else
+					{
+						if (zero < peak)
+						{
+							if ((int)pixel < peak && (int)pixel >= zero)
+							{
+								pixel++;
+							}
+						}
+						else
+						{
+							if ((int)pixel > peak && (int)pixel <= zero)
+							{
+								pixel--;
+							}
+						}
+					}
+
+					
+					markedImage[i] = pixel;
+				}
+			}
+
+		
 
 
 			return (data, markedImage);
