@@ -157,7 +157,11 @@ namespace steg1
 			}
 			sizeFileStatus.Content = zeroPeak;
 
-			SaveFileDialog saveFileDialog = new SaveFileDialog();
+			(int maxCapacity, int usedCapacity) = HistogramShifting.CalcSpace(hist, peaks);
+
+			sizeFileStatus2.Content = $"Всего доступно байт: {maxCapacity} \nИспользуется для сохранения нулей: {usedCapacity}";
+				
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
             if (saveFileDialog.ShowDialog() == true)
             {
                 BMPOutPath = saveFileDialog.FileName;
@@ -259,5 +263,56 @@ namespace steg1
 		{
 
 		}
-	}
+
+        private void calcMetrics2_Click(object sender, RoutedEventArgs e)
+        {
+            string[] bmpFiles = Directory.GetFiles(testBMPFolder, "*.bmp");
+            string folder = Path.GetDirectoryName(testBMPFolder)!;
+            string csvPath = Path.Combine(
+                folder,
+                Path.GetFileNameWithoutExtension(testBMPFolder) + ".csv"
+            );
+
+            if (!File.Exists(csvPath))
+            {
+                var header = new StringBuilder("Image");
+                for (int i = 1; i < 8; i++) // Начинаем с 1, так как 0 бит обычно не используется
+				{
+					header.Append($";{i} MAX");
+					header.Append($";{i} FREE");
+				}
+                header.AppendLine();
+
+                File.WriteAllText(csvPath, header.ToString());
+            }
+
+            foreach (var bmpFile in bmpFiles)
+            {
+                var line = new StringBuilder();
+                List<int> hist = ImageMetrics.BuildHistogram(bmpFile);
+
+                // Добавляем имя файла один раз в начале строки
+                line.Append(Path.GetFileNameWithoutExtension(bmpFile));
+
+                // Затем для каждого бита добавляем значения
+                for (int i = 1; i < 8; i++)
+                {
+                    (int maxCapacity, int usedCapacity) = HistogramShifting.CalcSpace(hist, i);
+
+                    // Рассчитываем доступное место (можно использовать разные метрики)
+                    // Или можно использовать процент: (double)availableSpace / maxCapacity * 100
+                    line.Append($";{maxCapacity}");
+                    line.Append($";{usedCapacity}");
+                }
+
+                line.AppendLine();
+                File.AppendAllText(csvPath, line.ToString());
+            }
+        
+
+
+
+
+    }
+    }
 }

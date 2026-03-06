@@ -26,7 +26,8 @@
 
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label x:Name="sizeFileStatus" Width="350" HorizontalAlignment="Center" Height="40"></Label>
+                    <Label x:Name="sizeFileStatus" Width="200" HorizontalAlignment="Center" Height="40"></Label>
+                    <Label x:Name="sizeFileStatus2" Width="300" HorizontalAlignment="Center" Height="40"></Label>
 
                 </StackPanel>
            
@@ -34,7 +35,6 @@
                     <Label>Укажите число пиков/нулей:</Label>
                     <ComboBox Width="40" x:Name="selectBit1"
                   SelectedIndex="3">
-                        <ComboBoxItem>0</ComboBoxItem>
                         <ComboBoxItem>1</ComboBoxItem>
                         <ComboBoxItem>2</ComboBoxItem>
                         <ComboBoxItem>3</ComboBoxItem>
@@ -63,6 +63,7 @@
                     <Button x:Name="getFolder" Click="getFolder_Click" Margin="5">Выбрать папку</Button>
                     <Button x:Name="getOriginal" Click="getOriginal_Click" Margin="5">Выбрать оригинал</Button>
                     <Button x:Name="calcMetrics" Click="calcMetrics_Click" Margin="5">Посчитать метрики</Button>
+                    <Button x:Name="calcMetrics2" Click="calcMetrics2_Click"  Margin="5">Посчитать место</Button>
                 </StackPanel>
                 <TextBox Width="600" Height="400" x:Name="metricsOutput"     FontFamily="Consolas"></TextBox>
             </StackPanel>

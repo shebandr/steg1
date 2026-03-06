@@ -71,8 +71,8 @@ namespace steg1
 				
 			}
 
-			Debug.WriteLine($"{min[0]} {min[1]} {min[2]} ");
-			Debug.WriteLine($"{selectedMax[0]} {selectedMax[1]} {selectedMax[2]} ");
+			//Debug.WriteLine($"{min[0]} {min[1]} {min[2]} ");
+			//Debug.WriteLine($"{selectedMax[0]} {selectedMax[1]} {selectedMax[2]} ");
 			return (min, selectedMax);
 		}
 
@@ -164,8 +164,10 @@ namespace steg1
 
 			Debug.WriteLine($"емкость {capacity} бит или {capacity / 8} байт, объем встраиваемых данных {dataHideBits.Count/8} байт");
 			if (dataHideBits.Count > capacity)
-				throw new Exception($"Слишком много данных: доступно {capacity} бит, а передано {dataHideBits.Count} бит.");
-
+			{
+				Debug.WriteLine($"Слишком много данных: доступно {capacity} бит, а передано {dataHideBits.Count} бит.");
+				return (markedImage, zeroPoints, peakPoints); ;
+			}
 			for (int p = 0; p < peakPoints.Count; p++)
 			{
 				int peak = peakPoints[p];
@@ -380,11 +382,9 @@ namespace steg1
 
 
 
-		public static (int maxCapacity, int freeCapacity) CalcSpace(List<int> hist, List<byte> originalImage, List<byte> dataHide, int peakCount)
+		public static (int maxCapacity, int usedCapacity) CalcSpace(List<int> hist, int peakCount)
 		{
-			int wmLength = dataHide.Count;
-			Debug.WriteLine(wmLength);
-			byte[] lengthBytes = BitConverter.GetBytes(wmLength);
+			
 
 			List<byte> payloadBytes = new List<byte>();
 
