@@ -15,7 +15,7 @@ namespace steg1
 {
     internal class l4
     {
-        public static List<byte> SelectBiteFromBMP(List<byte> data, int byteIndex)
+        public static List<byte> SelectByteFromBMP(List<byte> data, int byteIndex)
         {
             byteIndex = 7 - byteIndex;
             int colorsCount = BitConverter.ToInt32(data.GetRange(46, 50).ToArray(), 0);

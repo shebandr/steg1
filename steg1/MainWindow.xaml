@@ -16,11 +16,9 @@
         </Border>
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
             <StackPanel>
-                <Label HorizontalAlignment="Center">Внедрение информации по гистограмме (вариант 1).</Label>
+                <Label HorizontalAlignment="Center">Кси ^2</Label>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="getTXT" Margin="5" Click="getTXT_Click">Открыть вотермарку</Button>
-                    <Button x:Name="getBMP" Margin="5" Click="getBMP_Click">Открыть контейнер</Button>
-                    <Button x:Name="getBMPFolder" Margin="5" Click="getFolder_Click">Открыть папку</Button>
+                    <Button x:Name="getBMP" Margin="5" Click="CalcX2_Click">Открыть контейнер и посчитать X^2</Button>
                     <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить вотермарку в картинку</Button>
                     <Button x:Name="CalcIntegrationAll" Margin="5" Click="CalcIntegrationAll_Click">Внедрить вотермарку во все в папке</Button>
 

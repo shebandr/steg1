@@ -59,7 +59,7 @@ namespace steg1
 
 				for (int i = 0; i < 8; i++)
 				{
-					List<byte> result = l4.SelectBiteFromBMP(data, i);
+					List<byte> result = l4.SelectByteFromBMP(data, i);
 
 					string outputPath = System.IO.Path.Combine(
 						outputDir,
@@ -126,47 +126,32 @@ namespace steg1
             }
         }
 
-        private void CalcIntegration_Click(object sender, RoutedEventArgs e)
+        private void CalcX2_Click(object sender, RoutedEventArgs e)
         {
-            if(BMPInPath == "" || TXTInPath == "")
-            {
-                return;
-            }
+            OpenFileDialog openFileDialog = new OpenFileDialog();
 
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                BMPInPath = openFileDialog.FileName;
+            }
 
             List<byte> data = l4.GetBytesFromBMP(BMPInPath);
-            List<byte> dataWM = l4.GetBytesFromBMP(TXTInPath);
-            
-			
-			int peaks = Convert.ToInt32(((ComboBoxItem)selectBit1.SelectedItem).Content);
- 
-	
 
-			List<int> hist = ImageMetrics.BuildHistogram(BMPInPath);
-
-			(List<byte> data2, MPPZZero, MPPZPeak) = HistogramShifting.MPPZIn(hist, data, dataWM, peaks);
-			string zeroPeak = "Нули: ";
-			foreach(var a in MPPZZero)
+			List<List<double>> chi = Steganalysis.FullChiCalc(data, 16);
+			string output = string.Empty;
+			for (int i = 0; i < chi.Count; i++) 
 			{
-				zeroPeak += $"{a.ToString()} ";
+				for(int q = 0; q< chi[i].Count; q++)
+				{
+					output += chi[i][q].ToString("F2");
+					output += " ";
+				}
+				output += "\n";
 			}
-			zeroPeak += "\nПики:";
-			foreach (var a in MPPZPeak)
-			{
-				zeroPeak += $"{a.ToString()} ";
-			}
-			sizeFileStatus.Content = zeroPeak;
+            metricsOutput.Text = output;
 
-			(int maxCapacity, int usedCapacity) = HistogramShifting.CalcSpace(hist, peaks);
 
-			sizeFileStatus2.Content = $"Всего доступно байт: {maxCapacity} \nИспользуется для сохранения нулей: {usedCapacity}";
-				
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                BMPOutPath = saveFileDialog.FileName;
-            }
-            l4.SetBytesToBMP(BMPOutPath, data2);
         }
 
 		private void CalcIntegrationAll_Click(object sender, RoutedEventArgs e)
@@ -314,5 +299,10 @@ namespace steg1
 
 
     }
+
+        private void CalcIntegration_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
