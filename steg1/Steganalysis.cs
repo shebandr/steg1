@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Navigation;
+using MathNet.Numerics.Distributions;
 
 namespace steg1
 {
@@ -120,6 +121,7 @@ namespace steg1
         public static double ChiCalc(List<int> hist)
         {
             double chi = 0;
+            int validPairs = 0;
 
             for (int i = 0; i < 128; i++)
             {
@@ -129,15 +131,29 @@ namespace steg1
                 double expected = (even + odd) / 2.0;
 
                 if (expected > 0)
+                {
                     chi += Math.Pow(odd - expected, 2) / expected;
+                    chi += Math.Pow(even - expected, 2) / expected;
+                    validPairs++;
+                }
             }
-            return chi;
+
+            // защита от мусора
+            if (validPairs <= 1)
+                return 1.0;
+
+            int df = validPairs - 1;
+
+            // перевод в p-value
+            double pValue = 1.0 - MathNet.Numerics.Distributions.ChiSquared.CDF(df, chi);
+
+            return pValue;
         }
 
-		#endregion
+        #endregion
 
-		#region RS
-		private static int Smoothness(byte[] block)
+        #region RS
+        private static int Smoothness(byte[] block)
 		{
 			int sum = 0;
 			for (int i = 0; i < block.Length - 1; i++)

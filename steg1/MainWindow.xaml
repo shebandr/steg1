@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:steg1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="750" Width="800">
+        Title="MainWindow" Height="750" Width="1000">
     <StackPanel>
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
             <StackPanel>
@@ -40,7 +40,7 @@
                     <Button x:Name="calcMetrics" Click="calcMetrics_Click" Margin="5">Посчитать метрики</Button>
                     <Button x:Name="calcMetrics2" Click="calcMetrics2_Click"  Margin="5">Посчитать место</Button>
                 </StackPanel>
-                <TextBox Width="600" Height="400" x:Name="metricsOutput"     FontFamily="Consolas"></TextBox>
+                <TextBox Width="1000" Height="600" x:Name="metricsOutput"     FontFamily="Consolas"></TextBox>
             </StackPanel>
         </Border>
     </StackPanel>

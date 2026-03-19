@@ -215,13 +215,55 @@ namespace steg1
 
 		private void calsXi2Mass_Click(object sender, RoutedEventArgs e)
 		{
-			string[] bmpFiles = Directory.GetFiles(testBMPFolder, "*.bmp");
-			foreach (var bmpFile in bmpFiles)
-			{
-				
 
-			}
-		}
+
+
+            Dictionary<string, List<List<double>>> allResults = new Dictionary<string, List<List<double>>>();
+            string[] bmpFiles = Directory.GetFiles(testBMPFolder, "*.bmp");
+            foreach (var bmpFile in bmpFiles)
+            {
+                try
+                {
+                    List<byte> data = l4.GetBytesFromBMP(bmpFile);
+
+                    List<List<double>> chi = Steganalysis.FullChiCalc(data, xiBlockSize);
+
+                    allResults.Add(Path.GetFileNameWithoutExtension(bmpFile), chi);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Ошибка при обработке файла: {bmpFile}");
+                    Console.WriteLine($"Сообщение: {ex.Message}");
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var pair in allResults)
+            {
+				sb.Append(pair.Key);
+				sb.AppendLine();
+				foreach(var pair2 in pair.Value)
+				{
+                    string temp = "";
+					foreach(var pair3 in pair2)
+					{
+						string t = pair3.ToString("F2");
+
+                        temp += $"{t}\t";
+					}
+
+
+					sb.Append(temp);
+                }
+
+				sb.AppendLine();
+            }
+
+            string resultString = sb.ToString();
+            string outputPath = Path.Combine(testBMPFolder, "resultsXi.tsv");
+            File.WriteAllText(outputPath, resultString, Encoding.UTF8);
+			metricsOutput.Text = resultString;
+        }
 
 		private void calcRSMass_Click(object sender, RoutedEventArgs e)
 		{
@@ -257,7 +299,8 @@ namespace steg1
 			string resultString = sb.ToString(); 
 			string outputPath = Path.Combine(testBMPFolder, "resultsRS.tsv");
 			File.WriteAllText(outputPath, resultString, Encoding.UTF8);
-		}
+            metricsOutput.Text = resultString;
+        }
 
 		private void calcAUMPMass_Click(object sender, RoutedEventArgs e)
 		{
@@ -297,8 +340,8 @@ namespace steg1
 			string resultString = sb.ToString();
 			string outputPath = Path.Combine(testBMPFolder, "resultsAUMP.tsv");
 			File.WriteAllText(outputPath, resultString, Encoding.UTF8);
-
-		}
+            metricsOutput.Text = resultString;
+        }
 
 		
 		
@@ -413,13 +456,6 @@ namespace steg1
                 line.AppendLine();
                 File.AppendAllText(csvPath, line.ToString());
             }
-        
-
-
-
-
-    }
-
-		
+		}
     }
 }
