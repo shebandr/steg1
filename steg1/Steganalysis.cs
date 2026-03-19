@@ -52,7 +52,7 @@ namespace steg1
         public static List<List<byte>> SelectPixelsFromBMP(List<byte> data)
         {
             int colorsCount = BitConverter.ToInt32(data.GetRange(46, 50).ToArray(), 0);
-            Debug.WriteLine(colorsCount);
+            //Debug.WriteLine(colorsCount);
             byte[] width = (data.GetRange(18, 4).ToArray());
             byte[] height = (data.GetRange(22, 4).ToArray());
             int heightInt = BitConverter.ToInt32(height, 0);
@@ -212,7 +212,7 @@ namespace steg1
 			return (Rm, Sm, RmInv, SmInv);
 		}
 
-		public static void RunRSAnalysis(List<byte> data)
+		public static double RunRSAnalysis(List<byte> data)
 		{
 
 			List<List<byte>> pixels2D = Steganalysis.SelectPixelsFromBMP(data);
@@ -233,7 +233,7 @@ namespace steg1
 			double Sm = result.Sm;
 			double RmInv = result.RmInv;
 			double SmInv = result.SmInv;
-			Debug.WriteLine($"Rm={Rm} Sm={Sm} RmInv{RmInv} SmInv{SmInv}");
+			//Debug.WriteLine($"Rm={Rm} Sm={Sm} RmInv{RmInv} SmInv{SmInv}");
 
 			double numerator = (Rm - Sm) - (RmInv - SmInv);
 			double denominator = (Rm - Sm) + (RmInv - SmInv);
@@ -243,14 +243,14 @@ namespace steg1
 			{
 				p = numerator / denominator;
 			}
-			Debug.WriteLine($"{p} = {numerator}/{denominator}");
+			//Debug.WriteLine($"{p} = {numerator}/{denominator}");
 
 			double percent = Math.Abs(p) * 100.0;
 
 
-			Debug.WriteLine($"Оценка скрытия: {percent:F2}%");
+			//Debug.WriteLine($"Оценка скрытия: {percent:F2}%");
 
-		
+		    return percent;
 
 		}
 		#endregion

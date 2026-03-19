@@ -1,5 +1,9 @@
 ﻿
 using Microsoft.Win32;
+using Steg1;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,9 +13,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.IO;
-using System.Diagnostics;
-using Steg1;
 namespace steg1
 {
     /// <summary>
@@ -147,6 +148,7 @@ namespace steg1
 			List<byte> data2 = l4.GetBytesFromBMP(BMPInPath2);
 
 			List<List<double>> chi = Steganalysis.FullChiCalc(data, xiBlockSize);
+
 			List<List<double>> chi2 = Steganalysis.FullChiCalc(data2, xiBlockSize);
 			double sum = 0;
 			string output = string.Empty;
@@ -203,24 +205,103 @@ namespace steg1
 			byte[][] result = pixels.Select(row => row.ToArray()).ToArray();
 
 
-			// AUMP детектор
 			double beta_aump = AUMP.Aump(result, m: 16, d: 2);
 			Debug.WriteLine($"AUMP beta: {beta_aump}");
 
-			// Sample Pairs
-			double beta_sp = AUMP.SamplePairs(result);
-			Debug.WriteLine($"Sample Pairs beta: {beta_sp}");
-
-			// Triples
-			double beta_triples = AUMP.Triples(result);
-			Debug.WriteLine($"Triples beta: {beta_triples}");
-
-			// Weighted Stego
-			double beta_ws = AUMP.WeightedStego(result, applyBiasCorrection: true);
-			Debug.WriteLine($"Weighted Stego beta: {beta_ws}");
 
 			
 		}
+
+
+		private void calsXi2Mass_Click(object sender, RoutedEventArgs e)
+		{
+			string[] bmpFiles = Directory.GetFiles(testBMPFolder, "*.bmp");
+			foreach (var bmpFile in bmpFiles)
+			{
+				
+
+			}
+		}
+
+		private void calcRSMass_Click(object sender, RoutedEventArgs e)
+		{
+			Dictionary<string, double> allResults = new Dictionary<string, double>();
+			string[] bmpFiles = Directory.GetFiles(testBMPFolder, "*.bmp");
+			foreach (var bmpFile in bmpFiles)
+			{
+				try
+				{
+					List<byte> data = l4.GetBytesFromBMP(bmpFile);
+					double rsResult = Steganalysis.RunRSAnalysis(data);
+
+					allResults.Add(Path.GetFileNameWithoutExtension(bmpFile), rsResult);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Ошибка при обработке файла: {bmpFile}");
+					Console.WriteLine($"Сообщение: {ex.Message}");
+				}
+			}
+			StringBuilder sb = new StringBuilder();
+
+			foreach (var pair in allResults)
+			{
+				string value = pair.Value.ToString(new CultureInfo("ru-RU"));
+
+				sb.Append(pair.Key)
+				  .Append('\t')
+				  .Append(value)
+				  .AppendLine();
+			}
+
+			string resultString = sb.ToString(); 
+			string outputPath = Path.Combine(testBMPFolder, "resultsRS.tsv");
+			File.WriteAllText(outputPath, resultString, Encoding.UTF8);
+		}
+
+		private void calcAUMPMass_Click(object sender, RoutedEventArgs e)
+		{
+			Dictionary<string, double> allResults = new Dictionary<string, double>();
+			string[] bmpFiles = Directory.GetFiles(testBMPFolder, "*.bmp");
+			foreach (var bmpFile in bmpFiles)
+			{
+				try
+				{
+					List<byte> data = l4.GetBytesFromBMP(bmpFile);
+					List<List<byte>> pixels = Steganalysis.SelectPixelsFromBMP(data);
+
+					byte[][] result = pixels.Select(row => row.ToArray()).ToArray();
+
+
+					double beta_aump = AUMP.Aump(result, m: 16, d: 2);
+					allResults.Add(Path.GetFileNameWithoutExtension(bmpFile), beta_aump);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Ошибка при обработке файла: {bmpFile}");
+					Console.WriteLine($"Сообщение: {ex.Message}");
+				}
+			}
+
+			StringBuilder sb = new StringBuilder();
+			foreach (var pair in allResults)
+			{
+				string value = pair.Value.ToString(new CultureInfo("ru-RU"));
+
+				sb.Append(pair.Key)
+				  .Append('\t')
+				  .Append(value)
+				  .AppendLine();
+			}
+
+			string resultString = sb.ToString();
+			string outputPath = Path.Combine(testBMPFolder, "resultsAUMP.tsv");
+			File.WriteAllText(outputPath, resultString, Encoding.UTF8);
+
+		}
+
+		
+		
 
 
 
@@ -340,5 +421,5 @@ namespace steg1
     }
 
 		
-	}
+    }
 }

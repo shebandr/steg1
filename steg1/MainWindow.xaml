@@ -14,6 +14,11 @@
                     <Button x:Name="calsXi2" Margin="5" Click="CalcX2_Click">Открыть контейнеры и посчитать X^2</Button>
                     <Button x:Name="calcRS" Margin="5" Click="calcRS_Click">Посчитать RS</Button>
                     <Button x:Name="calcAUMP" Margin="5" Click="calcAUMP_Click">Посчитать AUMP</Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="calsXi2Mass" Margin="5" Click="calsXi2Mass_Click">Открыть контейнеры и посчитать X^2</Button>
+                    <Button x:Name="calcRSMass" Margin="5" Click="calcRSMass_Click">Посчитать RS</Button>
+                    <Button x:Name="calcAUMPMass" Margin="5" Click="calcAUMPMass_Click">Посчитать AUMP</Button>
 
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
