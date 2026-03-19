@@ -1,4 +1,5 @@
-﻿using Emgu.CV.Bioinspired;
+﻿using Accord.Math;
+using Emgu.CV.Bioinspired;
 using OpenCvSharp;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,8 @@ namespace steg1
 {
     internal static class Steganalysis
     {
-
-        public static List<List<double>> FullChiCalc(List<byte> data, int blockSize)
+		#region XI2
+		public static List<List<double>> FullChiCalc(List<byte> data, int blockSize)
         {
             List<List<byte>> pixels = SelectPixelsFromBMP(data);
 
@@ -133,5 +134,125 @@ namespace steg1
             return chi;
         }
 
-    }
+		#endregion
+
+		#region RS
+		private static int Smoothness(byte[] block)
+		{
+			int sum = 0;
+			for (int i = 0; i < block.Length - 1; i++)
+			{
+				sum += Math.Abs(block[i] - block[i + 1]);
+			}
+			return sum;
+		}
+
+		static byte[] ApplyMask(byte[] block, int[] mask)
+		{
+			byte[] result = new byte[block.Length];
+
+			for (int i = 0; i < block.Length; i++)
+			{
+				int t = block[i] + mask[i];
+				if(t > 255)
+				{
+					t = 0;
+				}
+				if (t < 0)
+				{
+					t = 255;
+				}
+				result[i] = (byte)t;
+
+			}
+
+			return result;
+		}
+
+		static int Classify(byte[] block, int[] mask)
+		{
+			int fOriginal = Smoothness(block);
+			byte[] flipped = ApplyMask(block, mask);
+			int fFlipped = Smoothness(flipped);
+
+			if (fFlipped > fOriginal)
+				return 1; // Regular
+			else if (fFlipped < fOriginal)
+				return -1; // Singular
+			else
+				return 0; // Unusable
+		}
+
+		public static (double Rm, double Sm, double RmInv, double SmInv) RSAnalysis(byte[] pixels)
+		{
+			int[] mask = { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };    
+			int[] maskInv = { -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+			int groupSize = 16;
+
+			int Rm = 0, Sm = 0;
+			int RmInv = 0, SmInv = 0;
+
+			for (int i = 0; i <= pixels.Length - groupSize; i += groupSize)
+			{
+				byte[] block = new byte[groupSize];
+				Array.Copy(pixels, i, block, 0, groupSize);
+
+				int res = Classify(block, mask);
+				if (res == 1) Rm++;
+				else if (res == -1) Sm++;
+
+				int resInv = Classify(block, maskInv);
+				if (resInv == 1) RmInv++;
+				else if (resInv == -1) SmInv++;
+			
+				
+			}
+
+			return (Rm, Sm, RmInv, SmInv);
+		}
+
+		public static void RunRSAnalysis(List<byte> data)
+		{
+
+			List<List<byte>> pixels2D = Steganalysis.SelectPixelsFromBMP(data);
+
+			List<byte> pixels1D = new List<byte>();
+
+			for (int y = 0; y < pixels2D.Count; y++)
+			{
+				for (int x = 0; x < pixels2D[0].Count; x++)
+				{
+					pixels1D.Add(pixels2D[y][x]);
+				}
+			}
+
+			var result = RSAnalysis(pixels1D.ToArray());
+
+			double Rm = result.Rm;
+			double Sm = result.Sm;
+			double RmInv = result.RmInv;
+			double SmInv = result.SmInv;
+			Debug.WriteLine($"Rm={Rm} Sm={Sm} RmInv{RmInv} SmInv{SmInv}");
+
+			double numerator = (Rm - Sm) - (RmInv - SmInv);
+			double denominator = (Rm - Sm) + (RmInv - SmInv);
+
+			double p = 0;
+			if (Math.Abs(denominator) > 1e-10)
+			{
+				p = numerator / denominator;
+			}
+			Debug.WriteLine($"{p} = {numerator}/{denominator}");
+
+			double percent = Math.Abs(p) * 100.0;
+
+
+			Debug.WriteLine($"Оценка скрытия: {percent:F2}%");
+
+		
+
+		}
+		#endregion
+	}
 }

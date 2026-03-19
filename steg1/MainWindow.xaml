@@ -9,18 +9,11 @@
     <StackPanel>
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
             <StackPanel>
-                <Label HorizontalAlignment="Center">Извлечение битовых плоскостей</Label>
-                <Button Width="150" Click="SelectFolder_Click" Margin="5">Выбрать папку</Button>
-                <Button Click="Button_Click" Width="150" Margin="5">Извлечь плоскости</Button>
-            </StackPanel>
-        </Border>
-        <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
-            <StackPanel>
                 <Label HorizontalAlignment="Center">Кси ^2</Label>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="getBMP" Margin="5" Click="CalcX2_Click">Открыть контейнер и посчитать X^2</Button>
-                    <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить вотермарку в картинку</Button>
-                    <Button x:Name="CalcIntegrationAll" Margin="5" Click="CalcIntegrationAll_Click">Внедрить вотермарку во все в папке</Button>
+                    <Button x:Name="calsXi2" Margin="5" Click="CalcX2_Click">Открыть контейнеры и посчитать X^2</Button>
+                    <Button x:Name="calcRS" Margin="5" Click="calcRS_Click">Посчитать RS</Button>
+                    <Button x:Name="calcAUMP" Margin="5" Click="calcAUMP_Click">Посчитать AUMP</Button>
 
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -29,31 +22,10 @@
 
                 </StackPanel>
            
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label>Укажите число пиков/нулей:</Label>
-                    <ComboBox Width="40" x:Name="selectBit1"
-                  SelectedIndex="3">
-                        <ComboBoxItem>1</ComboBoxItem>
-                        <ComboBoxItem>2</ComboBoxItem>
-                        <ComboBoxItem>3</ComboBoxItem>
-                        <ComboBoxItem>4</ComboBoxItem>
-                        <ComboBoxItem>5</ComboBoxItem>
-                        <ComboBoxItem>6</ComboBoxItem>
-                        <ComboBoxItem>7</ComboBoxItem>
-                    </ComboBox>
-                </StackPanel>
+               
             </StackPanel>
         </Border>
-        <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
-            <StackPanel>
-                <Label HorizontalAlignment="Center">Извлечение вотермарки.</Label>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="getBMP2" Margin="5" Click="getBMP2_Click">Открыть .bmp</Button>
-                    <Button x:Name="CalcExtractionLSB" Margin="5" Click="CalcExtraction_Click">Извлечь вотермарку</Button>
-                </StackPanel>
-              
-            </StackPanel>
-        </Border>
+        
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 0" >
             <StackPanel>
                 <Label HorizontalAlignment="Center">Метрики сравнения изображений</Label>

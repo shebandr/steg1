@@ -28,6 +28,7 @@ namespace steg1
 		private string refBMPPath = string.Empty;
 		private List<int> MPPZZero = new List<int>();
 		private List<int> MPPZPeak = new List<int>();
+		private int xiBlockSize = 32;
 		public MainWindow()
         {
 
@@ -128,37 +129,101 @@ namespace steg1
 
         private void CalcX2_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+			string BMPInPath2 = "";
 
-
+			OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == true)
             {
                 BMPInPath = openFileDialog.FileName;
             }
 
-            List<byte> data = l4.GetBytesFromBMP(BMPInPath);
+			openFileDialog = new OpenFileDialog();
+			if (openFileDialog.ShowDialog() == true)
+			{
+				BMPInPath2 = openFileDialog.FileName;
+			}
 
-			List<List<double>> chi = Steganalysis.FullChiCalc(data, 16);
+			List<byte> data = l4.GetBytesFromBMP(BMPInPath);
+			List<byte> data2 = l4.GetBytesFromBMP(BMPInPath2);
+
+			List<List<double>> chi = Steganalysis.FullChiCalc(data, xiBlockSize);
+			List<List<double>> chi2 = Steganalysis.FullChiCalc(data2, xiBlockSize);
+			double sum = 0;
 			string output = string.Empty;
 			for (int i = 0; i < chi.Count; i++) 
 			{
 				for(int q = 0; q< chi[i].Count; q++)
 				{
-					output += chi[i][q].ToString("F2");
+					output += (chi[i][q] - chi2[i][q]).ToString("F2");
 					output += " ";
+					sum += chi[i][q] - chi2[i][q];
 				}
 				output += "\n";
 			}
+			Debug.WriteLine(sum);
             metricsOutput.Text = output;
 
 
         }
 
-		private void CalcIntegrationAll_Click(object sender, RoutedEventArgs e)
+		private void calcRS_Click(object sender, RoutedEventArgs e)
 		{
+
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			if (openFileDialog.ShowDialog() == true)
+			{
+				BMPInPath = openFileDialog.FileName;
+			}
+
 			
 
+			List<byte> data = l4.GetBytesFromBMP(BMPInPath);
+
+			Steganalysis.RunRSAnalysis(data);
+
+			string output = string.Empty;
+		
+			metricsOutput.Text = output;
+
 		}
+
+		private void calcAUMP_Click(object sender, RoutedEventArgs e)
+		{
+			OpenFileDialog openFileDialog = new OpenFileDialog();
+			if (openFileDialog.ShowDialog() == true)
+			{
+				BMPInPath = openFileDialog.FileName;
+			}
+
+
+
+			List<byte> data = l4.GetBytesFromBMP(BMPInPath);
+			List<List<byte>> pixels = Steganalysis.SelectPixelsFromBMP(data);
+
+			byte[][] result = pixels.Select(row => row.ToArray()).ToArray();
+
+
+			// AUMP детектор
+			double beta_aump = AUMP.Aump(result, m: 16, d: 2);
+			Debug.WriteLine($"AUMP beta: {beta_aump}");
+
+			// Sample Pairs
+			double beta_sp = AUMP.SamplePairs(result);
+			Debug.WriteLine($"Sample Pairs beta: {beta_sp}");
+
+			// Triples
+			double beta_triples = AUMP.Triples(result);
+			Debug.WriteLine($"Triples beta: {beta_triples}");
+
+			// Weighted Stego
+			double beta_ws = AUMP.WeightedStego(result, applyBiasCorrection: true);
+			Debug.WriteLine($"Weighted Stego beta: {beta_ws}");
+
+			
+		}
+
+
+
 		private void getBMP2_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -171,29 +236,7 @@ namespace steg1
         }
 
 
-		private void CalcExtraction_Click(object sender, RoutedEventArgs e)
-        {
-            List<byte> data = l4.GetBytesFromBMP(BMPInPath);
-			List<byte> result = new List<byte>();
-			List<byte> original = new List<byte>();
-			
-			(result, original) = HistogramShifting.MPPZOut(data, MPPZZero, MPPZPeak);
-            
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-			if (saveFileDialog.ShowDialog() == true)
-            {
-                TXTOutPath = saveFileDialog.FileName;
-            }
-			l4.SetBytesToBMP(TXTOutPath, result);
-
-			saveFileDialog = new SaveFileDialog();
-			if (saveFileDialog.ShowDialog() == true)
-			{
-				TXTOutPath = saveFileDialog.FileName;
-			}
-			l4.SetBytesToBMP(TXTOutPath, original);
-		}
-
+		
 	
 
 		private void getFolder_Click(object sender, RoutedEventArgs e)
@@ -261,7 +304,7 @@ namespace steg1
             if (!File.Exists(csvPath))
             {
                 var header = new StringBuilder("Image");
-                for (int i = 1; i < 8; i++) // Начинаем с 1, так как 0 бит обычно не используется
+                for (int i = 1; i < 8; i++) 
 				{
 					header.Append($";{i} MAX");
 					header.Append($";{i} FREE");
@@ -276,16 +319,12 @@ namespace steg1
                 var line = new StringBuilder();
                 List<int> hist = ImageMetrics.BuildHistogram(bmpFile);
 
-                // Добавляем имя файла один раз в начале строки
                 line.Append(Path.GetFileNameWithoutExtension(bmpFile));
 
-                // Затем для каждого бита добавляем значения
                 for (int i = 1; i < 8; i++)
                 {
                     (int maxCapacity, int usedCapacity) = HistogramShifting.CalcSpace(hist, i);
 
-                    // Рассчитываем доступное место (можно использовать разные метрики)
-                    // Или можно использовать процент: (double)availableSpace / maxCapacity * 100
                     line.Append($";{maxCapacity}");
                     line.Append($";{usedCapacity}");
                 }
@@ -300,9 +339,6 @@ namespace steg1
 
     }
 
-        private void CalcIntegration_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-    }
+		
+	}
 }
