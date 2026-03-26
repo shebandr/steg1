@@ -9,18 +9,34 @@
     <StackPanel>
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
             <StackPanel>
-                <Label HorizontalAlignment="Center">Стегоанализ</Label>
+                <Label HorizontalAlignment="Center">Внедрение отпечатка пальцев</Label>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label>Выбор файла: </Label>
-                    <Button x:Name="calsXi2" Margin="5" Click="CalcX2_Click">Открыть контейнеры и посчитать X^2</Button>
-                    <Button x:Name="calcRS" Margin="5" Click="calcRS_Click">Посчитать RS</Button>
-                    <Button x:Name="calcAUMP" Margin="5" Click="calcAUMP_Click">Посчитать AUMP</Button>
+                    <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить вотермарку в картинку</Button>
+                    <Label>ключ:</Label>
+                    <TextBox Width="150" x:Name="keyField" ></TextBox>
+                    <Label>Число пользователей:</Label>
+                    <ComboBox Width="40" x:Name="selectBit1" SelectedIndex="6">
+                        <ComboBoxItem>0</ComboBoxItem>
+                        <ComboBoxItem>1</ComboBoxItem>
+                        <ComboBoxItem>2</ComboBoxItem>
+                        <ComboBoxItem>3</ComboBoxItem>
+                        <ComboBoxItem>4</ComboBoxItem>
+                        <ComboBoxItem>5</ComboBoxItem>
+                        <ComboBoxItem>10</ComboBoxItem>
+                        <ComboBoxItem>15</ComboBoxItem>
+                    </ComboBox>
+
                 </StackPanel>
+                <Label HorizontalAlignment="Center">Внедрение отпечатка пальцев</Label>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label>Выбор папки:</Label>
-                    <Button x:Name="calsXi2Mass" Margin="5" Click="calsXi2Mass_Click">Открыть контейнеры и посчитать X^2</Button>
-                    <Button x:Name="calcRSMass" Margin="5" Click="calcRSMass_Click">Посчитать RS</Button>
-                    <Button x:Name="calcAUMPMass" Margin="5" Click="calcAUMPMass_Click">Посчитать AUMP</Button>
+                    <Button x:Name="CalcExtraction" Margin="5" Click="CalcExtraction_Click">Внедрить вотермарку в картинку</Button>
+
+                    <Label>c:</Label>
+                    <TextBox Width="150" x:Name="cField" ></TextBox>
+
+                    <Label>c_real:</Label>
+                    <TextBox Width="150" x:Name="c_realField" ></TextBox>
+                    
 
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

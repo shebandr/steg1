@@ -457,5 +457,10 @@ namespace steg1
                 File.AppendAllText(csvPath, line.ToString());
             }
 		}
-    }
+
+		private void CalcExtraction_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+	}
 }
