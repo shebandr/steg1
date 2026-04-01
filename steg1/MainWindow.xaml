@@ -10,27 +10,25 @@
         <Border BorderBrush="Black" BorderThickness="0, 0, 0, 2" >
             <StackPanel>
                 <Label HorizontalAlignment="Center">Внедрение отпечатков пальцев</Label>
+                
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить вотермарку в картинку</Button>
+                    <Button x:Name="getBMP" Margin="5" Click="getBMP_Click">Открыть контейнер</Button>
+                    <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить отпечатки пальцев</Button>
                     <Label>ключ:</Label>
                     <TextBox Width="150" x:Name="keyField" ></TextBox>
+                   
+
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Label>Число пользователей:</Label>
 
-                    <TextBox Width="150" x:Name="origUsersCountField" > 15</TextBox>
+                    <TextBox Width="150" x:Name="origUsersCountField" >10</TextBox>
+                    <Label>Размер коалиции:</Label>
+
+                    <TextBox Width="150" x:Name="origAttackersCountField" >4</TextBox>
 
                 </StackPanel>
-                <Label HorizontalAlignment="Center">Внедрение отпечатка пальцев</Label>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button x:Name="CalcExtraction" Margin="5" Click="CalcExtraction_Click">Внедрить вотермарку в картинку</Button>
-
-                    <Label>c:</Label>
-                    <TextBox Width="150" x:Name="cField" ></TextBox>
-
-                    <Label>c_real:</Label>
-                    <TextBox Width="150" x:Name="c_realField" ></TextBox>
-                    
-
-                </StackPanel>
+      
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Label x:Name="sizeFileStatus" Width="200" HorizontalAlignment="Center" Height="40"></Label>
                     <Label x:Name="sizeFileStatus2" Width="300" HorizontalAlignment="Center" Height="40"></Label>

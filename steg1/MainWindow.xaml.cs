@@ -36,8 +36,27 @@ namespace steg1
 
             InitializeComponent();
 
-		
 
+			//Tardos.BuildCode(10, 2, 0.1);
+
+			//// 2. Получение инфы
+			//var info = Tardos.GetInfo();
+			//Debug.WriteLine($"Users: {info.users}, Length: {info.codeLength}, c: {info.collisionSize}");
+
+			//// 3. Симуляция атаки
+			//int[] attackers = { 2, 5, 7, 9 };
+
+			//var y = Tardos.Collide(attackers);
+
+			//// 4. Детект
+			//var result = Tardos.Detect(y);
+
+			//// 5. Вывод топ подозреваемых
+			//Debug.WriteLine("Top suspects:");
+			//for (int i = 0; i < 10; i++)
+			//{
+			//	Debug.WriteLine($"User {result[i].user}, score = {result[i].score:F4}");
+			//}
 		}
 
 
@@ -147,35 +166,67 @@ namespace steg1
 
 		private void CalcIntegration_Click(object sender, RoutedEventArgs e)
 		{
+			string outMetrics = string.Empty; 
 			string key = keyField.Text;
 			if (key == "")
 			{
 				key = defaultKey;
 			}
 			int origUsersCout = Int32.Parse(origUsersCountField.Text);
+			int origAttackersCout = Int32.Parse(origAttackersCountField.Text);
+			List<byte> data = l4.GetBytesFromBMP(BMPInPath);
 
+			Tardos.BuildCode(origUsersCout, origAttackersCout, 0.1);
 
-
-			Tardos.BuildCode(10, 2, 0.1);
-
-			// 2. Получение инфы
 			var info = Tardos.GetInfo();
-			Debug.WriteLine($"Users: {info.users}, Length: {info.codeLength}, c: {info.collisionSize}");
+			outMetrics += $"Пользователей: {info.users}, Длина в битах: {info.codeLength * 8}, c: {info.collisionSize} \n";
 
-			// 3. Симуляция атаки
 			int[] attackers = { 2, 5, 7, 9 };
-
 			var y = Tardos.Collide(attackers);
 
-			// 4. Детект
+			char[][] originalCodes = Tardos.GetCodeTable();
+			char[] pirateCode = y;
+
+			string selectedFolder = Path.Combine(Path.GetDirectoryName(BMPInPath), "Tardos");
+			Directory.CreateDirectory(selectedFolder);
+
+			string fileName = Path.GetFileNameWithoutExtension(BMPInPath);
+
+
+
+			List<byte> pirateBytes = pirateCode
+				.Select(c => (byte)(c - '0'))
+				.ToList();
+
+			List<byte> outPirate = WaterMark.SetWMToBMP(data, pirateBytes, key, 0);
+
+			string piratePath = Path.Combine(selectedFolder, $"{fileName}_pirate.bmp");
+
+			l4.SetBytesToBMP(piratePath, outPirate);
+
+
+			for (int q = 0; q < originalCodes.Length; q++)
+			{
+				List<byte> temp = originalCodes[q]
+					.Select(c => (byte)(c - '0'))
+					.ToList();
+
+				List<byte> outBytes = WaterMark.SetWMToBMP(data, temp, key, 0);
+
+				string outPath = Path.Combine(selectedFolder, $"{fileName}_{q}.bmp");
+
+				l4.SetBytesToBMP(outPath, outBytes);
+			}
+
+
 			var result = Tardos.Detect(y);
 
-			// 5. Вывод топ подозреваемых
-			Debug.WriteLine("Top suspects:");
+			outMetrics += "Топ подозреваемых: \n";
 			for (int i = 0; i < 10; i++)
 			{
-				Debug.WriteLine($"User {result[i].user}, score = {result[i].score:F4}");
+				outMetrics += $"Пользователь {result[i].user}, очки = {result[i].score:F4} \n";
 			}
+			metricsOutput.Text = outMetrics;
 		}
 
 
