@@ -12,6 +12,7 @@
                 <Label HorizontalAlignment="Center">Внедрение отпечатков пальцев</Label>
                 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="calcTardosAll" Click="calcTardosAll_Click" Margin="5">Посчитать графики</Button>
                     <Button x:Name="getBMP" Margin="5" Click="getBMP_Click">Открыть контейнер</Button>
                     <Button x:Name="CalcIntegration" Margin="5" Click="CalcIntegration_Click">Внедрить отпечатки пальцев</Button>
                     <Label>ключ:</Label>
@@ -29,11 +30,6 @@
 
                 </StackPanel>
       
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label x:Name="sizeFileStatus" Width="200" HorizontalAlignment="Center" Height="40"></Label>
-                    <Label x:Name="sizeFileStatus2" Width="300" HorizontalAlignment="Center" Height="40"></Label>
-
-                </StackPanel>
            
                
             </StackPanel>

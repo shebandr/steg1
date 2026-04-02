@@ -235,6 +235,113 @@ namespace steg1
 
 		}
 
+		private void calcTardosAll_Click(object sender, RoutedEventArgs e)
+		{
+			int N = 50;                
+			double eps = 0.1;
+			int experiments = 10;
 
+			int[] cValues = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+
+			string folder = Path.Combine(Path.GetDirectoryName(BMPInPath), "Tardos");
+			Directory.CreateDirectory(folder);
+
+			string csvPath = Path.Combine(folder, "tardos_results.csv");
+
+			var lines = new List<string>();
+
+			lines.Add("c\tc_real\tm\tZ\tDetectionProbability");
+
+			Random rnd = new Random();
+
+			foreach (int c in cValues)
+			{
+				Tardos.BuildCode(N, c, eps);
+
+				var info = Tardos.GetInfo();
+				int m = info.codeLength;
+
+				double Z = Math.Sqrt(m * Math.Log(N / eps));
+
+				for (int c_real = 1; c_real <= 20; c_real++)
+				{
+					int success = 0;
+
+					for (int iter = 0; iter < experiments; iter++)
+					{
+						int[] attackers = Enumerable.Range(0, N)
+							.OrderBy(x => rnd.Next())
+							.Take(c_real)
+							.ToArray();
+
+						var y = Tardos.Collide(attackers);
+						var result = Tardos.Detect(y); 
+
+						bool detected = false;
+
+						foreach (var r in result)
+						{
+							if (r.score > Z && attackers.Contains(r.user))
+							{
+								detected = true;
+								break;
+							}
+						}
+
+						if (detected)
+							success++;
+					}
+
+					double probability = (double)success / experiments;
+
+					lines.Add($"{c}\t{c_real}\t{m}\t{Z:F4}\t{probability:F4}");
+				}
+			}
+
+			File.WriteAllLines(csvPath, lines);
+
+			Debug.WriteLine($"CSV saved to: {csvPath}");
+
+
+			//string mGraphPath = Path.Combine(folder, "tardos_m_vs_c.csv");
+
+			//var mLines = new List<string>();
+
+			//mLines.Add("c\tm");
+
+			//foreach (int cVal in cValues)
+			//{
+			//	double k_local = Math.Ceiling(Math.Log(1 / eps));
+			//	int m_local = (int)(100 * cVal * cVal * k_local);
+
+			//	mLines.Add($"{cVal}\t{m_local}");
+			//}
+
+			//File.WriteAllLines(mGraphPath, mLines);
+
+			//Debug.WriteLine($"m(c) CSV saved to: {mGraphPath}");
+
+
+			//string zGraphPath = Path.Combine(folder, "tardos_Z_vs_c.csv");
+
+			//var zLines = new List<string>();
+
+			//zLines.Add("c\tZ");
+
+			//foreach (int cVal in cValues)
+			//{
+			//	double k_local = Math.Ceiling(Math.Log(1 / eps));
+			//	int m_local = (int)(100 * cVal * cVal * k_local);
+
+			//	double Z_local = Math.Sqrt(m_local * Math.Log(N / eps));
+
+			//	zLines.Add($"{cVal}\t{Z_local:F4}");
+			//}
+
+			//File.WriteAllLines(zGraphPath, zLines);
+
+			//Debug.WriteLine($"Z(c) CSV saved to: {zGraphPath}");
+
+		}
 	}
 }
